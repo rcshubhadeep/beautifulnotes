@@ -1,12 +1,12 @@
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-
-import "./App.scss";
-import NotesIcon from "./assets/note_icon.png";
+import "./AppFinal.css";
+import NotesIcon from "./assets/note_icon1.png";
 import KbIcon from "./assets/kb_icon.png";
 import AiIcon from "./assets/ai_icon.png";
 import PlusIcon from "./assets/plus_icon.png";
 import DeleteIcon from "./assets/delete_icon.png";
+import SettingIcon from "./assets/setting_icon.png";
 import { useEffect, useState } from "react";
 import {
   getNotes,
@@ -20,6 +20,7 @@ enum ViewMode {
   Notes,
   AI,
   KnowledgeBase,
+  Settings,
 }
 
 function App() {
@@ -100,76 +101,76 @@ function App() {
     switch (viewMode) {
       case ViewMode.Notes:
         return (
-          <>
-            <div className="container__middle">
-              <div className="container__middle__header">
-                <div className="container__middle__header__title_and_logo">
-                  <p>My Notes</p>
-                </div>
-                <div className="container__middle__header__action" onClick={addNote}>
-                  <img src={PlusIcon} alt="Add New Note Icon" />
-                  <p>New</p>
-                </div>
+          <div className="flex w-full">
+            <div className="w-1/3 bg-gray-100 p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">My Notes</h2>
+                <button
+                  className="flex items-center bg-blue-500 text-white px-3 py-2 rounded"
+                  onClick={addNote}
+                >
+                  <img src={PlusIcon} alt="Add New Note Icon" className="w-4 h-4 mr-2" />
+                  New
+                </button>
               </div>
-              <div className="container__middle__content">
+              <div>
                 {notes.map((item, index) => (
                   <div
                     key={`${item.title}_${index}`}
-                    className={`container__middle__content__row ${
-                      index === activeNote && "active"
-                    }`}
+                    className={`flex justify-between items-center p-2 cursor-pointer rounded ${
+                      index === activeNote ? "bg-blue-100" : "bg-white"
+                    } hover:bg-gray-200`}
                     onClick={() => setActiveNoteData(index)}
                   >
-                    <div className="container__middle__content__row__left">
-                      <p className="container__middle__content__row__left__title">
-                        {item.title || "Untitled"}
-                      </p>
-                      <p className="container__middle__content__row__left__date">
-                        {item.created_at}
-                      </p>
+                    <div>
+                      <p className="font-semibold">{item.title || "Untitled"}</p>
+                      <p className="text-sm text-gray-600">{item.created_at}</p>
                     </div>
-
                     <img
                       src={DeleteIcon}
                       alt="Delete Note Icon"
-                      className="container__middle__content__row__action"
-                      onClick={() => deleteNote(index)}
+                      className="w-4 h-4 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteNote(index);
+                      }}
                     />
                   </div>
                 ))}
               </div>
             </div>
-            <div className="container__right">
-              <p className="container__right__date">{notes[activeNote]?.created_at}</p>
+            <div className="w-2/3 p-4">
+              <p className="text-sm text-gray-600 mb-2">{notes[activeNote]?.created_at}</p>
               <ReactQuill
                 value={activeNoteContent}
                 onChange={handleChange}
                 placeholder="Write Your Note Here"
+                className="h-full"
               />
             </div>
-          </>
+          </div>
         );
       case ViewMode.AI:
         return (
-          <>
-            <div className="container__middle">
-              <div className="container__middle__header">
-                <div className="container__middle__header__title_and_logo">
-                  <p>SmApps</p>
-                </div>
-                <div className="container__middle__header__action" onClick={addNote}>
-                  <img src={PlusIcon} alt="Add New Note Icon" />
-                  <p>New</p>
-                </div>
+          <div className="flex w-full">
+            <div className="w-1/3 bg-gray-100 p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">SmApps</h2>
+                <button
+                  className="flex items-center bg-blue-500 text-white px-3 py-2 rounded"
+                  onClick={addNote}
+                >
+                  <img src={PlusIcon} alt="Add New Note Icon" className="w-4 h-4 mr-2" />
+                  New
+                </button>
               </div>
-              <div className="container__middle__content">
-                {/* Placeholder for SmApps List */}
+              <div>
                 <p>No SmApps available</p>
               </div>
             </div>
-            <div className="container__right">
-              <div className="container__right__controls">
-                <select className="container__right__dropdown">
+            <div className="w-2/3 p-4">
+              <div className="flex justify-end mb-2">
+                <select className="border border-gray-300 rounded p-2">
                   <option value="all">Apply to all Notes</option>
                   <option value="selected">Apply to selected Notes</option>
                 </select>
@@ -178,13 +179,14 @@ function App() {
                 value={activeNoteContent}
                 onChange={handleChange}
                 placeholder="AI interaction will be here..."
+                className="h-full"
               />
             </div>
-          </>
+          </div>
         );
       case ViewMode.KnowledgeBase:
         return (
-          <div className="container__knowledgebase">
+          <div className="flex w-full p-4">
             {/* Knowledge Base content will be implemented here */}
           </div>
         );
@@ -194,31 +196,46 @@ function App() {
   };
 
   return (
-    <div className="container">
-      <div className="container__icons">
+    <div className="flex h-screen">
+      <div className="w-16 bg-gray-200 text-gray-800 flex flex-col items-center py-4 space-y-4">
         <img
           src={NotesIcon}
           alt="Notes Icon"
           onClick={() => setViewMode(ViewMode.Notes)}
-          className={`icon ${viewMode === ViewMode.Notes ? "active" : ""}`}
+          className={`w-8 h-8 cursor-pointer ${
+            viewMode === ViewMode.Notes ? "opacity-100" : "opacity-50"
+          }`}
         />
         <img
           src={KbIcon}
           alt="Knowledge Base Icon"
           onClick={() => setViewMode(ViewMode.KnowledgeBase)}
-          className={`icon ${viewMode === ViewMode.KnowledgeBase ? "active" : ""}`}
+          className={`w-8 h-8 cursor-pointer ${
+            viewMode === ViewMode.KnowledgeBase ? "opacity-100" : "opacity-50"
+          }`}
         />
         <img
           src={AiIcon}
           alt="AI Icon"
           onClick={() => setViewMode(ViewMode.AI)}
-          className={`icon ${viewMode === ViewMode.AI ? "active" : ""}`}
+          className={`w-8 h-8 cursor-pointer ${
+            viewMode === ViewMode.AI ? "opacity-100" : "opacity-50"
+          }`}
+        />
+        <img
+          src={SettingIcon}
+          alt="AI Icon"
+          onClick={() => setViewMode(ViewMode.Settings)}
+          className={`w-8 h-8 cursor-pointer ${
+            viewMode === ViewMode.Settings ? "opacity-100" : "opacity-50"
+          }`}
         />
       </div>
-      {renderContent()}
+      <div className="flex-grow flex flex-row">
+        {renderContent()}
+      </div>
     </div>
   );
 }
 
 export default App;
-

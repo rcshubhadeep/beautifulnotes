@@ -9,7 +9,7 @@ This template should help get you started developing with Tauri, React and Types
 
 ## Icons
 
-<a href="https://www.flaticon.com/free-icons/document" title="document icons">Document icons created by Freepik - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/essay" title="essay icons">Essay icons created by RIkas Dzihab - Flaticon</a>
 
 <a href="https://www.flaticon.com/free-icons/plus" title="plus icons">Plus icons created by Freepik - Flaticon</a>
 
@@ -18,3 +18,5 @@ This template should help get you started developing with Tauri, React and Types
 <a href="https://www.flaticon.com/free-icons/artificial-intelligence" title="artificial intelligence icons">Artificial intelligence icons created by Freepik - Flaticon</a>
 
 <a href="https://www.flaticon.com/free-icons/knowledge" title="knowledge icons">Knowledge icons created by Freepik - Flaticon</a>
+
+<a href="https://www.flaticon.com/free-icons/technology" title="technology icons">Technology icons created by Freepik - Flaticon</a>
