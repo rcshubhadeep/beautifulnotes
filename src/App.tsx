@@ -1,3 +1,6 @@
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+
 import "./App.scss";
 import NotesIcon from "./assets/note_icon.png";
 import KbIcon from "./assets/kb_icon.png";
@@ -60,21 +63,17 @@ function App() {
     setActiveNoteContent("");
   };
 
-  const handleChange = ({
-    target: { value },
-  }: {
-    target: { value: string };
-  }) => {
+  const handleChange = (content: string) => {
     if (notes.length === 0) return;
 
-    const header = value.split(/\r?\n/)[0];
+    const header = content.split(/\r?\n/)[0];
     if (notes.length !== 0 && notes[activeNote].title !== header) {
       notes[activeNote].title = header;
       updateNotes([...notes]);
     }
 
-    setActiveNoteContent(value);
-    writeTextFile(notes[activeNote].location, value);
+    setActiveNoteContent(content);
+    writeTextFile(notes[activeNote].location, content);
   };
 
   const setActiveNoteData = async (index: number) => {
@@ -142,12 +141,11 @@ function App() {
             </div>
             <div className="container__right">
               <p className="container__right__date">{notes[activeNote]?.created_at}</p>
-              <textarea
-                name="note_input"
-                placeholder="Write Your Note Here"
-                onChange={handleChange}
+              <ReactQuill
                 value={activeNoteContent}
-              ></textarea>
+                onChange={handleChange}
+                placeholder="Write Your Note Here"
+              />
             </div>
           </>
         );
@@ -167,7 +165,7 @@ function App() {
               <div className="container__middle__content">
                 {/* Placeholder for SmApps List */}
                 <p>No SmApps available</p>
-              </  div>
+              </div>
             </div>
             <div className="container__right">
               <div className="container__right__controls">
@@ -176,10 +174,11 @@ function App() {
                   <option value="selected">Apply to selected Notes</option>
                 </select>
               </div>
-              <textarea
-                name="smapp_input"
+              <ReactQuill
+                value={activeNoteContent}
+                onChange={handleChange}
                 placeholder="AI interaction will be here..."
-              ></textarea>
+              />
             </div>
           </>
         );
@@ -222,3 +221,4 @@ function App() {
 }
 
 export default App;
+
