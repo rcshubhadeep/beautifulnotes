@@ -10,13 +10,6 @@ import Notes from './views/Notes';
 import AI from './views/AI';
 import KnowledgeBase from './views/KnowledgeBase';
 import Settings from './views/Settings';
-import {
-  getNotes,
-  setNotes as setNotesOnLocalStorage,
-} from "./helpers/getFromLocalStorage";
-import dayjs from "dayjs";
-import { writeTextFile, readTextFile, removeFile } from "@tauri-apps/api/fs";
-import { save } from "@tauri-apps/api/dialog";
 
 enum ViewMode {
   Notes,
@@ -26,9 +19,6 @@ enum ViewMode {
 }
 
 function App() {
-  const [notes, setNotes] = useState<Array<Record<string, string>>>([]);
-  const [activeNote, setActiveNote] = useState(0);
-  const [activeNoteContent, setActiveNoteContent] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Notes);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
@@ -40,93 +30,12 @@ function App() {
     }
   }, [isDarkMode]);
 
-  const updateNotes = (notes: Array<Record<string, string>>) => {
-    setNotes([...notes]);
-    setNotesOnLocalStorage(JSON.stringify(notes));
-  };
-
-  const deleteNote = async (noteID: number) => {
-    await removeFile(notes[noteID].location);
-    notes.splice(noteID, 1);
-    updateNotes(notes);
-    if (activeNote >= noteID) {
-      setActiveNoteData(activeNote >= 1 ? activeNote - 1 : 0);
-    }
-  };
-
-  const addNote = async () => {
-    const savePath = await save();
-    if (!savePath) return;
-    await writeTextFile(`${savePath}.txt`, "");
-
-    const myNewNote = {
-      title: "New note",
-      created_at: `${dayjs().format("ddd, DD MMMM YYYY")} at ${dayjs().format(
-        "hh:mm A"
-      )}`,
-      location: `${savePath}.txt`,
-    };
-
-    updateNotes([{ ...myNewNote }, ...notes]);
-    setActiveNote(0);
-    setActiveNoteContent("");
-  };
-
-  const handleChange = (content: string) => {
-    if (notes.length === 0) return;
-
-    const header = content.split(/\r?\n/)[0];
-    if (notes.length !== 0 && notes[activeNote].title !== header) {
-      notes[activeNote].title = header;
-      updateNotes([...notes]);
-    }
-
-    setActiveNoteContent(content);
-    writeTextFile(notes[activeNote].location, content);
-  };
-
-  const setActiveNoteData = async (index: number) => {
-    setActiveNote(index);
-    if (notes.length === 0) setActiveNoteContent("");
-    else {
-      const contents = await readTextFile(notes[index].location);
-      setActiveNoteContent(contents);
-    }
-  };
-
-  useEffect(() => {
-    const getNotesFromStorage = async () => {
-      const myNotes = await getNotes();
-      setNotes(myNotes);
-    };
-
-    getNotesFromStorage();
-  }, []);
-
   const renderContent = () => {
     switch (viewMode) {
       case ViewMode.Notes:
-        return (
-          <Notes
-            notes={notes}
-            activeNote={activeNote}
-            setActiveNote={setActiveNote}
-            setActiveNoteContent={setActiveNoteContent}
-            addNote={addNote}
-            deleteNote={deleteNote}
-            handleChange={handleChange}
-            activeNoteContent={activeNoteContent}
-            setActiveNoteData={setActiveNoteData}
-          />
-        );
+        return <Notes />;
       case ViewMode.AI:
-        return (
-          <AI
-            addNote={addNote}
-            activeNoteContent={activeNoteContent}
-            handleChange={handleChange}
-          />
-        );
+        return <AI />;
       case ViewMode.KnowledgeBase:
         return <KnowledgeBase />;
       case ViewMode.Settings:

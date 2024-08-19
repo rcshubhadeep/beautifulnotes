@@ -2,31 +2,111 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import PlusIcon from "../assets/plus_icon.png";
 import DeleteIcon from "../assets/delete_icon.png";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { writeTextFile, readTextFile, removeFile } from "@tauri-apps/api/fs";
+import { save } from "@tauri-apps/api/dialog";
+import dayjs from "dayjs";
+import { getNotes, setNotes as setNotesOnLocalStorage } from "../helpers/getFromLocalStorage";
 
-interface NotesProps {
-  notes: Array<Record<string, string>>;
-  activeNote: number;
-  setActiveNote: (index: number) => void;
-  setActiveNoteContent: (content: string) => void;
-  addNote: () => void;
-  deleteNote: (index: number) => void;
-  handleChange: (content: string) => void;
-  activeNoteContent: string;
-  setActiveNoteData: (index: number) => void;
-}
+const stripHtml = (html: string): string => {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || div.innerText || '';
+};
 
-const Notes: React.FC<NotesProps> = ({
-  notes,
-  activeNote,
-  setActiveNote,
-  setActiveNoteContent,
-  addNote,
-  deleteNote,
-  handleChange,
-  activeNoteContent,
-  setActiveNoteData,
-}) => {
+const truncate = (str: string, maxLength: number): string => {
+  if (str.length <= maxLength) return str;
+  return str.slice(0, maxLength) + '...';
+};
+
+const Notes: React.FC = () => {
+  const [notes, setNotes] = useState<Array<Record<string, string>>>([]);
+  const [activeNote, setActiveNote] = useState(0);
+  const [activeNoteContent, setActiveNoteContent] = useState("");
+
+  useEffect(() => {
+    const getNotesFromStorage = async () => {
+      const myNotes = await getNotes();
+      setNotes(myNotes);
+    };
+
+    getNotesFromStorage();
+  }, []);
+
+  useEffect(() => {
+    if (notes.length > 0) {
+      setActiveNoteData(activeNote);
+    } else {
+      setActiveNoteContent("");
+    }
+  }, [notes]);
+
+  const updateNotes = (updatedNotes: Array<Record<string, string>>) => {
+    setNotes([...updatedNotes]);
+    // console.log(notes);
+    // console.log(JSON.stringify(updatedNotes))
+    setNotesOnLocalStorage(JSON.stringify(updatedNotes));
+  };
+
+  const deleteNote = async (noteID: number) => {
+    await removeFile(notes[noteID].location);
+    const updatedNotes = notes.filter((_, index) => index !== noteID);
+    updateNotes(updatedNotes);
+    if (activeNote >= noteID) {
+      setActiveNoteData(Math.max(activeNote - 1, 0));
+    }
+  };
+
+  const addNote = async () => {
+    const savePath = await save({
+      defaultPath: "note", // this ensures a new file is created each time
+      filters: [{
+        name: "Text Files",
+        extensions: ["txt"]
+      }]
+    });
+    if (!savePath) return;
+
+    const myNewNote = {
+      title: "New note",
+      created_at: `${dayjs().format("ddd, DD MMMM YYYY")} at ${dayjs().format(
+        "hh:mm A"
+      )}`,
+      location: `${savePath}.txt`, // Ensure unique savePath
+    };
+
+    const updatedNotes = [...notes, myNewNote]; // Append new note at the end
+    await writeTextFile(`${savePath}.txt`, "");
+    // console.log(updatedNotes);
+    updateNotes(updatedNotes);
+    // console.log(notes);
+    await setActiveNoteData(updatedNotes.length - 1); // Set the newly created note as active
+    setActiveNoteContent("");
+  };
+
+  const handleChange = (content: string) => {
+    if (notes.length === 0) return;
+    // console.log(activeNote);
+
+    const header = content.split(/\r?\n/)[0];
+    const updatedNotes = [...notes];
+    if (notes[activeNote].title !== header) {
+      updatedNotes[activeNote].title = header;
+      updateNotes(updatedNotes);
+    }
+
+    setActiveNoteContent(content);
+    writeTextFile(notes[activeNote].location, content);
+    // console.log(activeNote);
+  };
+
+  const setActiveNoteData = async (index: number) => {
+    setActiveNote(index);
+    // console.log(notes[index]);
+    const contents = await readTextFile(notes[index].location);
+    setActiveNoteContent(contents);
+  };
+
   return (
     <div className="flex w-full">
       <div className="w-1/3 bg-gray-100 p-4">
@@ -50,7 +130,9 @@ const Notes: React.FC<NotesProps> = ({
               onClick={() => setActiveNoteData(index)}
             >
               <div>
-                <p className="font-semibold">{item.title || "Untitled"}</p>
+                <p className="font-semibold">
+                  {truncate(stripHtml(item.title || "Untitled"), 20)}
+                </p>
                 <p className="text-sm text-gray-600">{item.created_at}</p>
               </div>
               <img
