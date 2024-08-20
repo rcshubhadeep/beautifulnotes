@@ -12,6 +12,7 @@ tauri-build = { version = "1", features = [] }
 
 [dependencies]
 tauri = { version = "1", features = [ "system-tray", "path-all", "fs-read-file", "fs-write-file", "fs-remove-file", "dialog-save"] }
+tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 redb = "2.1.1"

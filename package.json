@@ -19,7 +19,8 @@
     "react-dom": "^18.3.1",
     "react-quill": "^2.0.0",
     "sass": "^1.77.8",
-    "tailwindcss": "^3.4.10"
+    "tailwindcss": "^3.4.10",
+    "tauri-plugin-store-api": "https://github.com/tauri-apps/tauri-plugin-store#v1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1",

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { writeTextFile, readTextFile, removeFile } from "@tauri-apps/api/fs";
 import { save } from "@tauri-apps/api/dialog";
 import dayjs from "dayjs";
-import { getNotes, setNotes as setNotesOnLocalStorage } from "../helpers/getFromLocalStorage";
+import { getNotes, setNotes as storeNoteMetadata } from "../api/storage";
 
 const stripHtml = (html: string): string => {
   const div = document.createElement('div');
@@ -26,7 +26,10 @@ const Notes: React.FC = () => {
 
   useEffect(() => {
     const getNotesFromStorage = async () => {
-      const myNotes = await getNotes();
+      let myNotes = await getNotes();
+      myNotes = myNotes.sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime(); 
+      });
       setNotes(myNotes);
     };
 
@@ -41,11 +44,12 @@ const Notes: React.FC = () => {
     }
   }, [notes]);
 
-  const updateNotes = (updatedNotes: Array<Record<string, string>>) => {
+  const updateNotes = async (updatedNotes: Array<Record<string, string>>) => {
     setNotes([...updatedNotes]);
     // console.log(notes);
     // console.log(JSON.stringify(updatedNotes))
-    setNotesOnLocalStorage(JSON.stringify(updatedNotes));
+    // setNotesOnLocalStorage(JSON.stringify(updatedNotes));
+    await storeNoteMetadata(updatedNotes);
   };
 
   const deleteNote = async (noteID: number) => {
@@ -75,12 +79,12 @@ const Notes: React.FC = () => {
       location: `${savePath}.txt`, // Ensure unique savePath
     };
 
-    const updatedNotes = [...notes, myNewNote]; // Append new note at the end
+    const updatedNotes = [myNewNote, ...notes]; // Append new note at the end
     await writeTextFile(`${savePath}.txt`, "");
     // console.log(updatedNotes);
-    updateNotes(updatedNotes);
+    await updateNotes(updatedNotes);
     // console.log(notes);
-    await setActiveNoteData(updatedNotes.length - 1); // Set the newly created note as active
+    await setActiveNoteData(0); // Set the newly created note as active
     setActiveNoteContent("");
   };
 
@@ -120,36 +124,36 @@ const Notes: React.FC = () => {
             New
           </button>
         </div>
-        <div>
-          {notes.map((item, index) => (
-            <div
-              key={`${item.title}_${index}`}
-              className={`flex justify-between items-center p-2 cursor-pointer rounded ${
-                index === activeNote ? "bg-blue-100" : "bg-white"
-              } hover:bg-gray-200`}
-              onClick={() => setActiveNoteData(index)}
-            >
-              <div>
-                <p className="font-semibold">
-                  {truncate(stripHtml(item.title || "Untitled"), 20)}
-                </p>
-                <p className="text-sm text-gray-600">{item.created_at}</p>
-              </div>
-              <img
-                src={DeleteIcon}
-                alt="Delete Note Icon"
-                className="w-4 h-4 cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteNote(index);
-                }}
-              />
+        <div className="flex flex-col gap-[20px]">
+        {notes.map((item, index) => (
+          <div
+            key={`${item.title}_${index}`}
+            className={`flex justify-between items-center p-2 cursor-pointer rounded ${
+              index === activeNote ? "bg-blue-100" : "bg-white"
+            } hover:bg-gray-200`}
+            onClick={() => setActiveNoteData(index)}
+          >
+            <div>
+              <p className="from-neutral-300">
+                {truncate(stripHtml(item.title || "Untitled"), 20)}
+              </p>
             </div>
-          ))}
-        </div>
+            <img
+              src={DeleteIcon}
+              alt="Delete Note Icon"
+              className="w-4 h-4 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteNote(index);
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
       </div>
       <div className="w-2/3 p-4">
-        <p className="text-sm text-gray-600 mb-2">{notes[activeNote]?.created_at}</p>
+        <p className="text-xs text-gray-500 mb-2">{notes[activeNote]?.created_at}</p>
         <ReactQuill
           value={activeNoteContent}
           onChange={handleChange}
