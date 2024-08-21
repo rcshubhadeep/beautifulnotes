@@ -3,8 +3,8 @@ import 'react-quill/dist/quill.snow.css';
 import PlusIcon from "../assets/plus_icon.png";
 import DeleteIcon from "../assets/delete_icon.png";
 import { useEffect, useState } from "react";
-import { writeTextFile, readTextFile, removeFile } from "@tauri-apps/api/fs";
-import { save } from "@tauri-apps/api/dialog";
+// import { writeTextFile, readTextFile, removeFile } from "@tauri-apps/api/fs";
+// import { save } from "@tauri-apps/api/dialog";
 import dayjs from "dayjs";
 import { getNotes, setNotes as storeNoteMetadata } from "../api/storage";
 
@@ -53,7 +53,7 @@ const Notes: React.FC = () => {
   };
 
   const deleteNote = async (noteID: number) => {
-    await removeFile(notes[noteID].location);
+    // await removeFile(notes[noteID].location);
     const updatedNotes = notes.filter((_, index) => index !== noteID);
     updateNotes(updatedNotes);
     if (activeNote >= noteID) {
@@ -62,25 +62,25 @@ const Notes: React.FC = () => {
   };
 
   const addNote = async () => {
-    const savePath = await save({
-      defaultPath: "note", // this ensures a new file is created each time
-      filters: [{
-        name: "Text Files",
-        extensions: ["txt"]
-      }]
-    });
-    if (!savePath) return;
+    // const savePath = await save({
+    //   defaultPath: "note", // this ensures a new file is created each time
+    //   filters: [{
+    //     name: "Text Files",
+    //     extensions: ["txt"]
+    //   }]
+    // });
+    // if (!savePath) return;
 
     const myNewNote = {
       title: "New note",
       created_at: `${dayjs().format("ddd, DD MMMM YYYY")} at ${dayjs().format(
         "hh:mm A"
       )}`,
-      location: `${savePath}.txt`, // Ensure unique savePath
+      // location: `${savePath}.txt`, // Ensure unique savePath
     };
 
     const updatedNotes = [myNewNote, ...notes]; // Append new note at the end
-    await writeTextFile(`${savePath}.txt`, "");
+    // await writeTextFile(`${savePath}.txt`, "");
     // console.log(updatedNotes);
     await updateNotes(updatedNotes);
     // console.log(notes);
@@ -100,14 +100,16 @@ const Notes: React.FC = () => {
     }
 
     setActiveNoteContent(content);
-    writeTextFile(notes[activeNote].location, content);
+    // writeTextFile(notes[activeNote].location, content);
     // console.log(activeNote);
   };
 
   const setActiveNoteData = async (index: number) => {
+    console.log(index);
     setActiveNote(index);
     // console.log(notes[index]);
-    const contents = await readTextFile(notes[index].location);
+    // const contents = await readTextFile(notes[index].location);
+    const contents = notes[index].title
     setActiveNoteContent(contents);
   };
 
