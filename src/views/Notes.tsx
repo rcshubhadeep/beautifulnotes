@@ -155,13 +155,21 @@ const Notes: React.FC = () => {
 
       </div>
       <div className="w-2/3 p-4">
-        <p className="text-xs text-gray-500 mb-2">{notes[activeNote]?.created_at}</p>
-        <ReactQuill
-          value={activeNoteContent}
-          onChange={handleChange}
-          placeholder="Write Your Note Here"
-          className="h-full"
-        />
+        {notes.length === 0 ? (
+          <div className="flex h-full items-center justify-center">
+            <p className="text-center font-bold">No notes to display, please select one</p>
+          </div>
+        ) : (
+          <div className="h-full">
+            <p className="text-xs text-gray-500 mb-2">{notes[activeNote]?.created_at}</p>
+            <ReactQuill
+              value={activeNoteContent}
+              onChange={handleChange}
+              placeholder="Write Your Note Here"
+              className="h-full"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
